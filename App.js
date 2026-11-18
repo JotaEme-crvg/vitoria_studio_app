@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Alert, Linking, StatusBar } from 'react-native';
+import * as Sharing from 'expo-sharing';
 import {
   useAudioRecorder,
   AudioModule,
@@ -82,7 +83,6 @@ function parseLocalDateTime(isoDateStr, timeStr) {
   return dt.getTime();
 }
 
-// Player reutilizável para ouvir o áudio tanto no agendamento quanto no painel da Vitória
 function AudioPreview({ uri, duration }) {
   const player = useAudioPlayer(uri);
   const status = useAudioPlayerStatus(player);
@@ -117,7 +117,6 @@ export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Estados da gravação de áudio
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [isRecording, setIsRecording] = useState(false);
   const [recordSeconds, setRecordSeconds] = useState(0);
@@ -141,7 +140,6 @@ export default function App() {
     initDatabase().catch(e => Alert.alert('Erro SQLite', e.message));
   }, []);
 
-  // Cronômetro da gravação (incrementa a cada 1 segundo)
   useEffect(() => {
     if (!isRecording) return;
     const interval = setInterval(() => {
@@ -150,7 +148,6 @@ export default function App() {
     return () => clearInterval(interval);
   }, [isRecording]);
 
-  // Para automaticamente ao atingir 01:30 (90 segundos)
   useEffect(() => {
     if (isRecording && recordSeconds >= MAX_AUDIO_SECONDS) {
       stopRecording();
@@ -350,6 +347,26 @@ export default function App() {
       .catch(() => Alert.alert('WhatsApp', 'Não foi possível abrir o link.'));
   }
 
+  async function shareAudioFile(uri) {
+    try {
+      if (!uri) {
+        Alert.alert('Áudio indisponível', 'Nenhum arquivo de áudio encontrado neste agendamento.');
+        return;
+      }
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        Alert.alert('Indisponível', 'O compartilhamento de arquivos não está disponível neste dispositivo.');
+        return;
+      }
+      await Sharing.shareAsync(uri, {
+        mimeType: 'audio/mp4',
+        dialogTitle: 'Enviar áudio da tatuagem no WhatsApp'
+      });
+    } catch (e) {
+      Alert.alert('Erro ao compartilhar', e.message || 'Não foi possível enviar o arquivo de áudio.');
+    }
+  }
+
   async function cancel(id) {
     Alert.alert('Cancelar agendamento?', 'O horário será liberado e os lembretes serão cancelados.', [
       { text: 'Voltar', style: 'cancel' },
@@ -456,7 +473,6 @@ export default function App() {
             {choices('REGIÃO', 'regiao', regions)}
             {field('TAMANHO APROXIMADO (CM)', 'tamanho', 'Ex.: 10', 'number-pad', 3)}
 
-            {/* SEÇÃO DE DESCRIÇÃO: TEXTO OU ÁUDIO DE ATÉ 01:30 */}
             <View style={s.field}>
               <Text style={s.label}>DESCRIÇÃO (DIGITE OU GRAVE UM ÁUDIO DE ATÉ 01:30)</Text>
               <TextInput
@@ -585,7 +601,14 @@ export default function App() {
                       <Text style={s.muted}>Protocolo: {b.protocolo}</Text>
                       <Text style={s.muted}>{dataFormatada} às {b.hora} • {b.estilo} • {b.regiao}</Text>
                       {!!b.ideia && <Text style={s.muted}>Descrição: {b.ideia}</Text>}
-                      {!!b.audio_uri && <AudioPreview uri={b.audio_uri} duration={b.audio_duration} />}
+                      {!!b.audio_uri && (
+                        <>
+                          <AudioPreview uri={b.audio_uri} duration={b.audio_duration} />
+                          <TouchableOpacity style={s.shareAudioBtn} onPress={() => shareAudioFile(b.audio_uri)}>
+                            <Text style={s.shareAudioText}>📤  ENVIAR ÁUDIO NO WHATSAPP</Text>
+                          </TouchableOpacity>
+                        </>
+                      )}
                       <Text style={s.muted}>Status: {b.status}</Text>
                       {button('ABRIR MENSAGEM NO WHATSAPP', () =>
                         openWhatsApp(b.whatsapp, b.status === 'confirmed' ? msgConfirmacao : msgCancelamento)
@@ -644,6 +667,8 @@ const s = StyleSheet.create({
   stopBtnText: { color: '#fff', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
   audioPlayBtn: { backgroundColor: '#242424', borderWidth: 1, borderColor: '#555', padding: 13, alignItems: 'center', marginTop: 10 },
   audioPlayText: { color: '#fff', fontSize: 11, fontWeight: 'bold', letterSpacing: 1 },
+  shareAudioBtn: { backgroundColor: '#1b3a2b', borderWidth: 1, borderColor: '#2e7d57', padding: 13, alignItems: 'center', marginTop: 8 },
+  shareAudioText: { color: '#a8f0c6', fontSize: 11, fontWeight: 'bold', letterSpacing: 1 },
   deleteAudioBtn: { padding: 10, alignItems: 'center', marginTop: 8 },
   deleteAudioText: { color: '#ff6b6b', fontSize: 10, letterSpacing: 1 }
 });

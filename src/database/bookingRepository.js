@@ -1,5 +1,6 @@
 import { getDb } from './connection';
 
+// essa função busca no banco os horários q já estão confirmados naquela data pra travar na tela
 export async function getOccupiedTimesByDate(dateStr) {
   const db = await getDb();
   const rows = await db.getAllAsync(
@@ -9,6 +10,7 @@ export async function getOccupiedTimesByDate(dateStr) {
   return rows.map(r => r.hora);
 }
 
+// essa função salva o agendamento no banco, gera o protocolo e já cria os lembretes de 24h e 2h antes
 export async function createBookingWithReminders({
   nome,
   whatsapp,
@@ -55,6 +57,7 @@ export async function createBookingWithReminders({
   return { protocolo };
 }
 
+// essa função libera os lembretes q já deram a hora e puxa tudo (agendamentos e lembretes) pro painel da Vitória
 export async function syncAndGetAdminDashboard() {
   const db = await getDb();
   const nowMs = Date.now();
@@ -74,6 +77,7 @@ export async function syncAndGetAdminDashboard() {
   return { bookings, reminders };
 }
 
+// essa função cancela o agendamento no banco, libera o horário de novo e cancela os lembretes pendentes
 export async function cancelBookingById(id) {
   const db = await getDb();
   const nowIso = new Date().toISOString();
@@ -90,6 +94,7 @@ export async function cancelBookingById(id) {
   });
 }
 
+// essa função marca o lembrete como enviado manualmente pra ele sair da lista de pendentes
 export async function markReminderAsSent(id) {
   const db = await getDb();
   await db.runAsync(

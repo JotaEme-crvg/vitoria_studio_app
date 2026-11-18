@@ -2,6 +2,7 @@ import * as SQLite from 'expo-sqlite';
 
 let dbPromise = null;
 
+// essa função abre o banco SQLite, cria as tabelas se não existirem e já cadastra o login padrão da Vitória
 export async function getDb() {
   if (!dbPromise) {
     dbPromise = (async () => {
@@ -76,6 +77,7 @@ export async function getDb() {
   return dbPromise;
 }
 
+// essa função só chama o getDb pra inicializar o banco logo q o app abre
 export async function initDatabase() {
   await getDb();
 }

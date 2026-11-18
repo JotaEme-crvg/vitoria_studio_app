@@ -24,8 +24,10 @@ const times = ['10:00', '13:00', '16:00'];
 const stylesTattoo = ['Fine Line', 'Blackwork', 'Realismo', 'Old School', 'Minimalista', 'Ornamental', 'Lettering', 'Outro'];
 const regions = ['Braço', 'Antebraço', 'Mão', 'Perna', 'Coxa', 'Costas', 'Peito', 'Costela', 'Outro'];
 const palette = { bg: '#090909', card: '#171717', line: '#333', white: '#fff', muted: '#aaa' };
+// arranca tudo q não é número de um texto (tipo telefone, data e tamanho)
 const digits = s => String(s || '').replace(/\D/g, '');
 
+// transforma os segundos no formato 00:00 pra mostrar o tempo do áudio
 function formatSeconds(totalSec) {
   const sec = Math.max(0, Math.floor(Number(totalSec) || 0));
   const m = String(Math.floor(sec / 60)).padStart(2, '0');
@@ -33,6 +35,7 @@ function formatSeconds(totalSec) {
   return `${m}:${s}`;
 }
 
+// bota a máscara (21) 99999-9999 enquanto o cliente digita o zap
 function formatPhoneMask(raw) {
   const d = digits(raw).slice(0, 11);
   if (d.length === 0) return '';
@@ -42,6 +45,7 @@ function formatPhoneMask(raw) {
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
 
+// bota as barras da data (DD/MM/AAAA) enquanto vai digitando
 function formatDateMask(raw) {
   const d = digits(raw).slice(0, 8);
   if (d.length <= 2) return d;
@@ -49,6 +53,7 @@ function formatDateMask(raw) {
   return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
 }
 
+// pega a data BR, vê se existe msm e converte pro formato do banco (AAAA-MM-DD)
 function brDateToIso(brDate) {
   if (!/^\d{2}\/\d{2}\/\d{4}$/.test(brDate)) return null;
   const [dd, mm, yyyy] = brDate.split('/');
@@ -60,12 +65,14 @@ function brDateToIso(brDate) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+// pega a data do banco (AAAA-MM-DD) e volta pro formato BR (DD/MM/AAAA)
 function isoToBrDate(isoDate) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(isoDate || ''))) return isoDate;
   const [yyyy, mm, dd] = isoDate.split('-');
   return `${dd}/${mm}/${yyyy}`;
 }
 
+// limpa o telefone e bota o 55 na frente pro link do zap abrir certinho
 function normalizePhone(raw) {
   const d = digits(raw);
   if (/^55\d{10,11}$/.test(d)) return d;
@@ -74,6 +81,7 @@ function normalizePhone(raw) {
   return local;
 }
 
+// junta data e hora em milissegundos pra checar se tem 2h de antecedência
 function parseLocalDateTime(isoDateStr, timeStr) {
   if (!isoDateStr || !/^\d{4}-\d{2}-\d{2}$/.test(isoDateStr)) return null;
   const [y, m, d] = isoDateStr.split('-').map(Number);
@@ -83,10 +91,12 @@ function parseLocalDateTime(isoDateStr, timeStr) {
   return dt.getTime();
 }
 
+// mini player q aparece na tela pro cliente ou a Vitória ouvirem o áudio
 function AudioPreview({ uri, duration }) {
   const player = useAudioPlayer(uri);
   const status = useAudioPlayerStatus(player);
 
+  // dá play, pausa ou reinicia o áudio quando clica no botão
   const togglePlay = () => {
     if (status.playing) {
       player.pause();
@@ -107,6 +117,7 @@ function AudioPreview({ uri, duration }) {
   );
 }
 
+// componente principal q controla as telas e toda a lógica do app
 export default function App() {
   const [page, setPage] = useState('home');
   const [adminUser, setAdminUser] = useState(null);
@@ -128,6 +139,7 @@ export default function App() {
     ideia: '', audioUri: '', audioDuration: 0, consent: false
   });
 
+  // atualiza os campos do formulário já aplicando as máscaras na hora
   const update = (key, value) => {
     let nextValue = value;
     if (key === 'whatsapp') nextValue = formatPhoneMask(value);
@@ -155,6 +167,7 @@ export default function App() {
     }
   }, [isRecording, recordSeconds]);
 
+  // pede permissão do microfone e começa a gravar a ideia em áudio
   async function startRecording() {
     try {
       const permission = await AudioModule.requestRecordingPermissionsAsync();
@@ -178,6 +191,7 @@ export default function App() {
     }
   }
 
+  // para a gravação, solta o microfone e salva o áudio no formulário
   async function stopRecording() {
     if (stoppingRef.current) return;
     stoppingRef.current = true;
@@ -204,6 +218,7 @@ export default function App() {
     }
   }
 
+  // apaga o áudio gravado se o cliente quiser gravar outro
   function removeAudio() {
     setForm(f => ({ ...f, audioUri: '', audioDuration: 0 }));
     setRecordSeconds(0);
@@ -236,6 +251,7 @@ export default function App() {
     return () => { active = false; };
   }, [form.data]);
 
+  // puxa do SQLite os agendamentos e lembretes pro painel da Vitória
   const loadAdminData = useCallback(async () => {
     if (!adminUser) {
       setBookings([]);
@@ -257,6 +273,7 @@ export default function App() {
     }
   }, [page, adminUser, loadAdminData]);
 
+  // valida os dados, checa horário livre, salva no SQLite e gera o protocolo
   async function book() {
     if (isRecording) {
       Alert.alert('Gravação em andamento', 'Pare a gravação do áudio antes de confirmar o agendamento.');
@@ -319,6 +336,7 @@ export default function App() {
     }
   }
 
+  // confere e-mail e senha da Vitória pra liberar a área restrita
   async function login() {
     setBusy(true);
     try {
@@ -337,6 +355,7 @@ export default function App() {
     }
   }
 
+  // monta o link wa.me com o texto pronto e abre direto no zap do cliente
   function openWhatsApp(number, message) {
     const phone = normalizePhone(number);
     if (!/^55\d{10,11}$/.test(phone)) {
@@ -347,6 +366,7 @@ export default function App() {
       .catch(() => Alert.alert('WhatsApp', 'Não foi possível abrir o link.'));
   }
 
+  // abre o menu de compartilhamento do celular pra mandar o arquivo de áudio no zap
   async function shareAudioFile(uri) {
     try {
       if (!uri) {
@@ -367,6 +387,7 @@ export default function App() {
     }
   }
 
+  // pede confirmação, cancela o agendamento no banco e libera o horário
   async function cancel(id) {
     Alert.alert('Cancelar agendamento?', 'O horário será liberado e os lembretes serão cancelados.', [
       { text: 'Voltar', style: 'cancel' },
@@ -385,6 +406,7 @@ export default function App() {
     ]);
   }
 
+  // marca o lembrete como enviado pra sair da lista de pendentes
   async function sent(id) {
     try {
       await markReminderAsSent(id);
@@ -394,12 +416,14 @@ export default function App() {
     }
   }
 
+  // cria o botão branco padrão do app pra não repetir código
   const button = (label, onPress, disabled = false) => (
     <TouchableOpacity disabled={disabled} style={[s.button, disabled && { opacity: 0.5 }]} onPress={onPress}>
       <Text style={s.buttonText}>{label}</Text>
     </TouchableOpacity>
   );
 
+  // monta cada caixinha de texto do formulário
   const field = (label, key, placeholder, keyboardType = 'default', maxLength = undefined) => (
     <View style={s.field}>
       <Text style={s.label}>{label}</Text>
@@ -415,6 +439,7 @@ export default function App() {
     </View>
   );
 
+  // monta os botões de escolha (estilo, região e horários) e trava os ocupados
   const choices = (label, key, options, blocked = []) => (
     <View style={s.field}>
       <Text style={s.label}>{label}</Text>

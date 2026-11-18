@@ -1,5 +1,6 @@
 import { getDb } from './connection';
 
+// essa função serve pra conferir no banco se o e-mail e a senha da Vitória estão certos e liberar o acesso
 export async function authenticateAdmin(email, password) {
   const db = await getDb();
   return await db.getFirstAsync(

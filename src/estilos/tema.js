@@ -1,0 +1,41 @@
+import { StyleSheet } from 'react-native';
+
+export const paleta = { bg: '#090909', card: '#171717', line: '#333', white: '#fff', muted: '#aaa' };
+
+export const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: paleta.bg },
+  header: { height: 62, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderColor: paleta.line },
+  logo: { color: '#fff', fontSize: 17, fontWeight: '900', letterSpacing: 2 },
+  small: { color: '#bbb', fontSize: 10 },
+  content: { padding: 22, paddingBottom: 50 },
+  eyebrow: { color: '#aaa', fontSize: 10, letterSpacing: 3, marginTop: 25 },
+  hero: { color: '#fff', fontSize: 46, fontWeight: '900', lineHeight: 49, marginTop: 24 },
+  title: { color: '#fff', fontSize: 23, fontWeight: 'bold', marginTop: 14 },
+  muted: { color: paleta.muted, fontSize: 13, lineHeight: 21, marginTop: 12 },
+  card: { backgroundColor: paleta.card, borderWidth: 1, borderColor: paleta.line, padding: 18, marginTop: 16 },
+  button: { backgroundColor: '#fff', padding: 17, alignItems: 'center', marginTop: 16 },
+  buttonText: { color: '#000', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  field: { marginTop: 19 },
+  label: { color: '#ccc', fontSize: 10, letterSpacing: 1.5, marginBottom: 10 },
+  input: { backgroundColor: paleta.card, color: '#fff', borderWidth: 1, borderColor: paleta.line, padding: 15 },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  choice: { padding: 12, borderWidth: 1, borderColor: '#444' },
+  selected: { backgroundColor: '#fff', borderColor: '#fff' },
+  blocked: { borderColor: '#222', backgroundColor: '#111' },
+  consent: { marginTop: 16 },
+  section: { color: '#fff', fontWeight: 'bold', fontSize: 12, letterSpacing: 1.5, marginTop: 32 },
+  nav: { height: 60, backgroundColor: '#111', borderTopWidth: 1, borderColor: paleta.line, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' },
+  navText: { color: '#ddd', fontSize: 10, letterSpacing: 1 },
+  audioBox: { backgroundColor: '#121212', borderWidth: 1, borderColor: '#333', padding: 14, marginTop: 10 },
+  recordBtn: { borderWidth: 1, borderColor: '#fff', padding: 14, alignItems: 'center' },
+  recordBtnText: { color: '#fff', fontSize: 11, fontWeight: 'bold', letterSpacing: 1 },
+  recordingText: { color: '#ff5252', fontSize: 12, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 },
+  stopBtn: { backgroundColor: '#ff5252', padding: 14, alignItems: 'center' },
+  stopBtnText: { color: '#fff', fontSize: 11, fontWeight: '900', letterSpacing: 1 },
+  audioPlayBtn: { backgroundColor: '#242424', borderWidth: 1, borderColor: '#555', padding: 13, alignItems: 'center', marginTop: 10 },
+  audioPlayText: { color: '#fff', fontSize: 11, fontWeight: 'bold', letterSpacing: 1 },
+  shareAudioBtn: { backgroundColor: '#1b3a2b', borderWidth: 1, borderColor: '#2e7d57', padding: 13, alignItems: 'center', marginTop: 8 },
+  shareAudioText: { color: '#a8f0c6', fontSize: 11, fontWeight: 'bold', letterSpacing: 1 },
+  deleteAudioBtn: { padding: 10, alignItems: 'center', marginTop: 8 },
+  deleteAudioText: { color: '#ff6b6b', fontSize: 10, letterSpacing: 1 }
+});

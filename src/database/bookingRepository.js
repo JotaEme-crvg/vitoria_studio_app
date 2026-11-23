@@ -102,3 +102,12 @@ export async function markReminderAsSent(id) {
     [new Date().toISOString(), id]
   );
 }
+
+// apaga definitivamente os lembretes e o agendamento do SQLite
+export async function deleteBookingById(id) {
+  const db = await getDb();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync(`DELETE FROM reminder_tasks WHERE booking_id = ?`, [id]);
+    await db.runAsync(`DELETE FROM bookings WHERE id = ?`, [id]);
+  });
+}

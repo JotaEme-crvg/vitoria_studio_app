@@ -4,6 +4,7 @@ import * as Sharing from 'expo-sharing';
 import {
   syncAndGetAdminDashboard,
   cancelBookingById,
+  deleteBookingById,
   markReminderAsSent
 } from '../database/bookingRepository';
 import PlayerAudio from '../componentes/PlayerAudio';
@@ -89,6 +90,29 @@ export default function TelaAdmin({ adminLogado, aoSair }) {
     ]);
   }
 
+  // pede confirmação irreversível e apaga o agendamento definitivamente do banco
+  function excluirDefinitivamente(id) {
+    Alert.alert(
+      'Excluir agendamento?',
+      'Tem certeza que deseja excluir este agendamento? Essa ação é definitiva e não será possível recuperá-lo.',
+      [
+        { text: 'Voltar', style: 'cancel' },
+        {
+          text: 'Excluir definitivamente',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteBookingById(id);
+              await carregarDadosAdmin();
+            } catch (e) {
+              Alert.alert('Erro ao excluir', e.message);
+            }
+          }
+        }
+      ]
+    );
+  }
+
   // marca o lembrete como enviado pra sair da lista de pendentes
   async function marcarEnviado(id) {
     try {
@@ -170,6 +194,14 @@ export default function TelaAdmin({ adminLogado, aoSair }) {
                 {b.status === 'confirmed' && (
                   <BotaoPadrao texto="CANCELAR AGENDAMENTO" aoPressionar={() => cancelar(b.id)} />
                 )}
+                <TouchableOpacity
+                  style={{ borderWidth: 1, borderColor: '#ff5252', padding: 15, alignItems: 'center', marginTop: 12 }}
+                  onPress={() => excluirDefinitivamente(b.id)}
+                >
+                  <Text style={{ color: '#ff6b6b', fontSize: 11, fontWeight: '900', letterSpacing: 1 }}>
+                    🗑️  EXCLUIR DEFINITIVAMENTE
+                  </Text>
+                </TouchableOpacity>
               </View>
             );
           })}

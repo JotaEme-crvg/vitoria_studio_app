@@ -151,7 +151,7 @@ export default function TelaAdmin({ adminLogado, aoSair }) {
           })}
 
           <Text style={s.section}>AGENDAMENTOS ({agendamentos.length})</Text>
-          {agendamentos.length === 0 && <Text style={s.muted}>Nenhum agendamento registrado no SQLite.</Text>}
+          {agendamentos.length === 0 && <Text style={s.muted}>Nenhum agendamento registrado.</Text>}
           {agendamentos.map(b => {
             const dataFormatada = dataIsoParaBr(b.data);
             const detalhesIdeia = [

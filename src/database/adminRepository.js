@@ -8,3 +8,11 @@ export async function authenticateAdmin(email, password) {
     [email.trim().toLowerCase(), password]
   );
 }
+
+// busca a conta da administradora após validação biométrica do aparelho
+export async function getAdminForBiometrics() {
+  const db = await getDb();
+  return await db.getFirstAsync(
+    `SELECT id, email, nome FROM admins WHERE enabled = 1 LIMIT 1`
+  );
+}
